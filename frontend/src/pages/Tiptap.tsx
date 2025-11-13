@@ -829,7 +829,7 @@ export const TiptapEditor = ({
           </div>
         )}
       </div>
-      <div className="max-[93rem]:hidden border-x-2 mt-20 border-gray-200 flex flex-col items-center pt-5">
+      <div className="border-x-2 mt-20 border-gray-200 flex flex-col items-center pt-5">
         <div className="pb-5 border-b-2 border-gray-200 flex flex-col items-center justify-center">
           <div>
             <HoverComponent label="Add Main Img">

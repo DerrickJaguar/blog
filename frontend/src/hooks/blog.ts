@@ -11,6 +11,7 @@ export interface BlogBinds {
   id: string;
   authorId: string;
   createdAt: string;
+  viewCount?: number;
   author: {
     id: string;
     name: string;

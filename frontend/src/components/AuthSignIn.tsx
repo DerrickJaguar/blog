@@ -37,6 +37,7 @@ export const AuthSignIn = () => {
       );
       const data = res.data;
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role || "user");
       handleAlert({ msg: `${data.msg}`, type: "success" });
       setTimeout(() => navigate("/blogs"), 3000);
     } catch (e) {

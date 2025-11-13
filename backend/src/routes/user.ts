@@ -50,12 +50,14 @@ userRouter.post("/signup", async (c) => {
       },
       select: {
         id: true,
+        role: true,
       },
     });
-    const token = await sign({ id: user.id }, JWT_SECRET);
+    const token = await sign({ id: user.id, role: user.role }, JWT_SECRET);
     return c.json({
       msg: "User created successfully",
       token,
+      role: user.role,
     });
   } catch (e) {
     console.error("Error:", e instanceof Error ? e.message : e);
@@ -86,14 +88,19 @@ userRouter.post("/signin", async (c) => {
       where: {
         email,
       },
+      select: {
+        id: true,
+        password: true,
+        role: true,
+      },
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       console.log("User not found");
       return c.json({ msg: "Invalid email and password" }, 403);
     }
-    const token = await sign({ id: user.id }, JWT_SECRET);
-    return c.json({ msg: "User succefully signed in", token }, 200);
+    const token = await sign({ id: user.id, role: user.role }, JWT_SECRET);
+    return c.json({ msg: "User succefully signed in", token, role: user.role }, 200);
   } catch (e) {
     console.error("Error:", e instanceof Error ? e.message : e);
     return c.json({ msg: "Error encountered" }, 500);

@@ -18,6 +18,7 @@ model User{
   email        String @unique
   name         String
   password     String
+  role         String @default("user")
   posts        Post[]
   profile      Profile?
   likes        Like[]
@@ -52,6 +53,7 @@ model Post{
   createdAt    DateTime @default(now())
   imgUrl       String?
   updatedAt    DateTime @updatedAt @default(now())
+  viewCount    Int @default(0)
   savedPosts   SavedPost[]
   tags         Tag[] @relation("PostTags")
   likes        Like[]

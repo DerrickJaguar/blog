@@ -3,6 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 // import { withAccelerate } from "@prisma/extension-accelerate";
 import { env } from "hono/adapter";
 import isUser from "../middlewares/isUser";
+import isAdmin from "../middlewares/isAdmin";
 import { blogSchema, idSchema } from "pbdev-medium-common";
 
 type Variables = {
@@ -13,7 +14,7 @@ type Variables = {
 
 export const blogRouter = new Hono<{ Variables: Variables }>();
 
-blogRouter.post("/create", isUser, async (c) => {
+blogRouter.post("/create", isAdmin, async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
@@ -56,7 +57,7 @@ blogRouter.post("/create", isUser, async (c) => {
   }
 });
 
-blogRouter.put("/update", isUser, async (c) => {
+blogRouter.put("/update", isAdmin, async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
@@ -120,6 +121,13 @@ blogRouter.get("/get/:id", /* isUser, */ async (c) => {
     }
     const postId = response.data;
     const userId = c.get("user")?.id || "";
+    
+    // Increment view count
+    await prisma.post.update({
+      where: { id: postId },
+      data: { viewCount: { increment: 1 } },
+    });
+    
     const post = await prisma.post.findUnique({
       where: {
         id: postId,
@@ -130,6 +138,7 @@ blogRouter.get("/get/:id", /* isUser, */ async (c) => {
         id: true,
         createdAt: true,
         authorId: true,
+        viewCount: true,
         author: {
           select: {
             id: true,
@@ -263,6 +272,7 @@ blogRouter.get("/bulk", /* isUser, */ async (c) => {
         content: true,
         createdAt: true,
         authorId: true,
+        viewCount: true,
         author: {
           select: {
             name: true,
@@ -1217,7 +1227,7 @@ blogRouter.post("/like/toggle/:postId", isUser, async (c) => {
   }
 });
 
-blogRouter.delete("/delete/:postId", isUser, async (c) => {
+blogRouter.delete("/delete/:postId", isAdmin, async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
@@ -1240,7 +1250,7 @@ blogRouter.delete("/delete/:postId", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/draft", isUser, async (c) => {
+blogRouter.get("/draft", isAdmin, async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
@@ -1282,7 +1292,7 @@ blogRouter.get("/draft", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/draft/get/:postId", isUser, async (c) => {
+blogRouter.get("/draft/get/:postId", isAdmin, async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,

@@ -8,15 +8,22 @@ export function PublicAppbar() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex items-center px-4 py-2 border-b-2 border-gray-200 bg-white fixed w-screen top-0 z-50 justify-between">
-      <Link to={"/blogs"}>
-        <div className="font-bold text-3xl ml-4 mr-10 cursor-pointer">
-          Africa Daily Times
+    <div className="flex items-center px-4 py-2 border-b-2 border-gray-200 bg-white fixed w-screen top-0 z-50 justify-between gap-4">
+      <Link to={"/blogs"} className="flex-shrink-0">
+        <div className="flex items-center gap-2 cursor-pointer">
+          <img 
+            src="/src/assets/header.jpg" 
+            alt="Africa Daily Times Logo" 
+            className="h-10 w-10 object-cover rounded"
+          />
+          <div className="font-bold text-2xl whitespace-nowrap">
+            AfricaDailyTimes
+          </div>
         </div>
       </Link>
-      <div className="flex justify-between w-full">
+      <div className="flex justify-between w-full gap-4">
         <form
-          className=" flex-1 max-w-lg "
+          className="flex-1 max-w-md"
           onSubmit={(e) => e.preventDefault()}
         >
           <div className="flex">
@@ -143,6 +150,36 @@ export function PublicAppbar() {
           </div>
         </form>
         <div className="mr-4 gap-4 flex items-center">
+          {/* Website Links */}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://duukaz.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+              title="Duukaz"
+            >
+              <img 
+                src="/src/assets/duukaz-logo.png" 
+                alt="Duukaz" 
+                className="h-8 w-auto object-contain"
+              />
+            </a>
+            <a
+              href="https://www.medic-erp.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+              title="Medic ERP"
+            >
+              <img 
+                src="/src/assets/medic-logo.png" 
+                alt="Medic ERP" 
+                className="h-8 w-auto object-contain"
+              />
+            </a>
+          </div>
+          
           <Link to={"/signin"}>
             <button className="text-gray-700 hover:text-black font-medium text-base cursor-pointer">
               Sign in

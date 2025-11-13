@@ -5,6 +5,7 @@ import { Blog } from "./pages/Blog";
 import { Blogs } from "./pages/Blogs";
 import { FilteredBlog } from "./pages/FilteredBlog";
 import { ProtectedRoute } from "./pages/ProtectedRoute";
+import { AdminRoute } from "./pages/AdminRoute";
 import { TiptapEditor } from "./pages/Tiptap";
 import { FilteredBlogByTag } from "./pages/FilteredBlogByTag";
 import { Profile } from "./pages/Profile";
@@ -16,28 +17,21 @@ import { UsersFilter } from "./pages/UsersFilter";
 import { Dashboard } from "./pages/Dashboard";
 
 function App() {
-  const token = localStorage.getItem("token");
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route
             path="/"
-            element={<Navigate to={token ? "/blogs" : "/dashboard"} />}
+            element={<Navigate to="/blogs" />}
           ></Route>
           <Route path="/signup" element={<Signup />}></Route>
           <Route path="/signin" element={<Signin />}></Route>
-          <Route
-            path="/blog/:id"
-            element={
-              <ProtectedRoute>
-                <Blog />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/blog/:id" element={<Blog />} />
           <Route path="/blogs" element={<Blogs />}></Route>
           <Route path="/blogs/:filter" element={<FilteredBlog />}></Route>
           <Route path="/tags/:filter" element={<FilteredBlogByTag />}></Route>
+          <Route path="/users/profile/:id" element={<OthersProfile />} />
           <Route
             path="/profile"
             element={
@@ -49,9 +43,9 @@ function App() {
           <Route
             path="/blogs/create"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <TiptapEditor />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           ></Route>
           <Route
@@ -64,12 +58,9 @@ function App() {
           ></Route>
           <Route
             path="/users/profile/:id"
-            element={
-              <ProtectedRoute>
-                <OthersProfile />
-              </ProtectedRoute>
-            }
-          ></Route>
+            element={<OthersProfile />}
+          />
+          <Route path="/users/filter/:filter" element={<UsersFilter />} />
           <Route
             path="/notifications"
             element={
@@ -81,19 +72,12 @@ function App() {
           <Route
             path="/blog/edit/:id"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <BlogEdit></BlogEdit>
-              </ProtectedRoute>
+              </AdminRoute>
             }
           ></Route>
-          <Route
-            path="/users/filter/:filter"
-            element={
-              <ProtectedRoute>
-                <UsersFilter />
-              </ProtectedRoute>
-            }
-          ></Route>
+          <Route path="/users/filter/:filter" element={<UsersFilter />} />
           <Route path="/dashboard" element={<Dashboard />}></Route>
         </Routes>
       </BrowserRouter>

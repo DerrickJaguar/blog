@@ -108,6 +108,44 @@ blogRouter.put("/update", isAdmin, async (c) => {
   }
 });
 
+// Delete blog post (Admin only)
+blogRouter.delete("/delete/:id", isAdmin, async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
+  const prisma = new PrismaClient({
+    datasourceUrl: DATABASE_URL,
+  });
+  try {
+    const response = idSchema.safeParse(c.req.param("id"));
+    if (!response.success) {
+      console.error("Invalid Blog Id format");
+      return c.json({ msg: "Invalid blog Id format" }, 400);
+    }
+    const postId = response.data;
+
+    // Check if post exists
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) {
+      return c.json({ msg: "Blog post not found" }, 404);
+    }
+
+    // Delete all related data first (use deleteMany which won't fail if no records exist)
+    await prisma.comment.deleteMany({ where: { postId } });
+    await prisma.like.deleteMany({ where: { postId } });
+    await prisma.savedPost.deleteMany({ where: { postId } });
+    await prisma.notification.deleteMany({ where: { postId } });
+    
+    // Now delete the post
+    await prisma.post.delete({ where: { id: postId } });
+
+    return c.json({ msg: "Blog successfully deleted" }, 200);
+  } catch (e) {
+    console.error("Error: ", e instanceof Error ? e.message : e);
+    return c.json({ msg: "Error encountered during blog deletion" }, 500);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
 blogRouter.get("/get/:id", /* isUser, */ async (c) => {
   const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({

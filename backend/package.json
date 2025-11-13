@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "scripts": {
-    "dev": "wrangler dev",
-    "dev:node": "tsx -r dotenv/config src/server.ts",
-    "prisma:generate": "prisma generate",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "dev": "tsx -r dotenv/config src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.6",
     "@prisma/client": "^6.10.1",
     "@prisma/extension-accelerate": "^2.0.1",
     "@types/bcrypt": "^5.0.2",
@@ -21,8 +21,6 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@hono/node-server": "^1.19.6",
-    "tsx": "^4.20.6",
-    "wrangler": "^4.4.0"
+    "tsx": "^4.20.6"
   }
 }

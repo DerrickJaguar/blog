@@ -4,6 +4,7 @@ import { BACKEND_URL } from "../config";
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { Appbar } from "../components/Appbar";
+import { PublicAppbar } from "../components/PublicAppbar";
 import { Pagination } from "../components/Pagination";
 import { Repeat } from "../helperComponents/Repeat";
 import { Skeleton } from "../components/Skeleton";
@@ -50,6 +51,7 @@ interface BlogResponse {
 }
 
 export function Blogs() {
+  const token = localStorage.getItem("token");
   const [page, setPage] = useState(1);
   const [allBlogsActive, setAllBlogsActive] = useState(true);
   const [followersBlogsActive, setFollowersBlogsActive] = useState(false);
@@ -67,13 +69,15 @@ export function Blogs() {
   const handleFetchingBulk = useCallback(
     async (page: number): Promise<BlogResponse> => {
       try {
+        const headers: Record<string, string> = {};
+        const token = localStorage.getItem("token");
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+        
         const res = await axios.get<BlogAxiosRes>(
           `${BACKEND_URL}/api/v1/blog/bulk?page=${page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+          { headers }
         );
         const blogs: fullBlogs[] = res.data.blogs.map((blog) => ({
           ...blog,
@@ -86,7 +90,6 @@ export function Blogs() {
         };
       } catch (e) {
         console.error("Error encountered while fetching blogs:", e);
-        alert("Error encountered while fetching blogs");
         return {
           blogs: [],
           totalPages: 0,
@@ -148,52 +151,54 @@ export function Blogs() {
   };
   return (
     <div>
-      <Appbar></Appbar>
+      {token ? <Appbar /> : <PublicAppbar />}
       <div className="grid grid-cols-8 w-screen">
         <div className="col-span-6 mt-20 flex flex-col items-center othersProfile overflow-y-scroll h-screen max-xl:col-span-8">
-          <div className="flex w-4xl border-b-2 border-gray-200 gap-8 mt-10">
-            <button
-              className={`py-2 px-2 cursor-pointer text-lg hover:text-black ${
-                allBlogsActive ? "text-black border-b-2" : "text-gray-600"
-              }`}
-              onClick={() => {
-                setAllBlogsActive(true);
-                setFollowersBlogsActive(false);
-                setFollowingsBlogsActive(false);
-              }}
-            >
-              All
-            </button>
+          {token && (
+            <div className="flex w-4xl border-b-2 border-gray-200 gap-8 mt-10">
+              <button
+                className={`py-2 px-2 cursor-pointer text-lg hover:text-black ${
+                  allBlogsActive ? "text-black border-b-2" : "text-gray-600"
+                }`}
+                onClick={() => {
+                  setAllBlogsActive(true);
+                  setFollowersBlogsActive(false);
+                  setFollowingsBlogsActive(false);
+                }}
+              >
+                All
+              </button>
 
-            <button
-              className={`py-2 cursor-pointer text-lg hover:text-black ${
-                followersBlogsActive ? "text-black border-b-2" : "text-gray-600"
-              }`}
-              onClick={() => {
-                setAllBlogsActive(false);
-                setFollowingsBlogsActive(false);
-                setFollowersBlogsActive(true);
-                handleFetchingFollowersBlogs();
-              }}
-            >
-              Followers
-            </button>
-            <button
-              className={`py-2 cursor-pointer text-lg hover:text-black ${
-                followingsBlogsActive
-                  ? "text-black border-b-2"
-                  : "text-gray-600"
-              }`}
-              onClick={() => {
-                setAllBlogsActive(false);
-                setFollowersBlogsActive(false);
-                setFollowingsBlogsActive(true);
-                handleFetchingFollowingsBlogs();
-              }}
-            >
-              Followings
-            </button>
-          </div>
+              <button
+                className={`py-2 cursor-pointer text-lg hover:text-black ${
+                  followersBlogsActive ? "text-black border-b-2" : "text-gray-600"
+                }`}
+                onClick={() => {
+                  setAllBlogsActive(false);
+                  setFollowingsBlogsActive(false);
+                  setFollowersBlogsActive(true);
+                  handleFetchingFollowersBlogs();
+                }}
+              >
+                Followers
+              </button>
+              <button
+                className={`py-2 cursor-pointer text-lg hover:text-black ${
+                  followingsBlogsActive
+                    ? "text-black border-b-2"
+                    : "text-gray-600"
+                }`}
+                onClick={() => {
+                  setAllBlogsActive(false);
+                  setFollowersBlogsActive(false);
+                  setFollowingsBlogsActive(true);
+                  handleFetchingFollowingsBlogs();
+                }}
+              >
+                Followings
+              </button>
+            </div>
+          )}
           {allBlogsActive &&
             (loading ? (
               <div className="mt-2">
@@ -304,56 +309,80 @@ export function Blogs() {
             ))}
         </div>
         <div className="col-span-2 border-l-2 max-xl:invisible border-gray-400 w-full mt-20 px-5">
-          <div className="h-70 border-b-2 border-gray-200">
-            <div className="text-lg font-medium mt-5">Trending Tags</div>
-            {tagsLoading ? (
-              <div className="animate-pulse max-w-lg mt-5 pb-3">
-                <div className="flex items-center gap-3 flex-wrap h-full">
-                  <Repeat count={15}>
-                    <div className="bg-gray-300 rounded-full h-8.5 w-15.5" />
-                  </Repeat>
-                </div>
+          {!token ? (
+            <div className="mt-10 p-5 bg-gray-100 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3">Join AfricaDailyTimes</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Sign in to see trending tags, discover new users, and interact with posts.
+              </p>
+              <div className="flex flex-col gap-2">
+                <a
+                  href="/signin"
+                  className="bg-black text-white text-center px-4 py-2 rounded-full hover:bg-gray-800 text-sm font-medium"
+                >
+                  Sign in
+                </a>
+                <a
+                  href="/signup"
+                  className="border border-gray-300 text-center px-4 py-2 rounded-full hover:bg-gray-50 text-sm font-medium"
+                >
+                  Create account
+                </a>
               </div>
-            ) : (
-              <div>
-                <div className="flex gap-x-5 gap-y-3 flex-wrap mt-5">
-                  {trendingTags.map((t) => (
-                    <TagStyle label={t} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="text-lg font-medium mt-5 ">New Users</div>
-            {usersLoading ? (
-              <Repeat count={5}>
-                {" "}
-                <div className="animate-pulse max-w-lg mt-3 pb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-gray-300 rounded-full h-8.5 w-8.5" />
-                    <div className="h-4 w-70 bg-gray-300 rounded-full" />
+            </div>
+          ) : (
+            <>
+              <div className="h-70 border-b-2 border-gray-200">
+                <div className="text-lg font-medium mt-5">Trending Tags</div>
+                {tagsLoading ? (
+                  <div className="animate-pulse max-w-lg mt-5 pb-3">
+                    <div className="flex items-center gap-3 flex-wrap h-full">
+                      <Repeat count={15}>
+                        <div className="bg-gray-300 rounded-full h-8.5 w-15.5" />
+                      </Repeat>
+                    </div>
                   </div>
-                </div>
-              </Repeat>
-            ) : (
-              <div className="w-full mt-5">
-                {newUsers.map((n) => (
-                  <FollowersCard
-                    key={n.id}
-                    id={n.id}
-                    avatar={n.imageUrl}
-                    bio={n.bio}
-                    hasFollowed={n.followedBack}
-                    himself={n.himself}
-                    followersCount={n.followersCount}
-                    followingId={n.id}
-                    name={n.name}
-                  />
-                ))}
+                ) : (
+                  <div>
+                    <div className="flex gap-x-5 gap-y-3 flex-wrap mt-5">
+                      {trendingTags.map((t) => (
+                        <TagStyle key={t} label={t} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+              <div>
+                <div className="text-lg font-medium mt-5 ">New Users</div>
+                {usersLoading ? (
+                  <Repeat count={5}>
+                    <div className="animate-pulse max-w-lg mt-3 pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gray-300 rounded-full h-8.5 w-8.5" />
+                        <div className="h-4 w-70 bg-gray-300 rounded-full" />
+                      </div>
+                    </div>
+                  </Repeat>
+                ) : (
+                  <div className="w-full mt-5">
+                    {newUsers.map((n) => (
+                      <FollowersCard
+                        key={n.id}
+                        id={n.id}
+                        avatar={n.imageUrl}
+                        bio={n.bio}
+                        hasFollowed={n.followedBack}
+                        himself={n.himself}
+                        followersCount={n.followersCount}
+                        followingId={n.id}
+                        name={n.name}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

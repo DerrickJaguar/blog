@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client/edge";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "@prisma/client";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 import { env } from "hono/adapter";
 import isUser from "../middlewares/isUser";
 import { idSchema } from "pbdev-medium-common";
@@ -8,10 +8,10 @@ import { idSchema } from "pbdev-medium-common";
 export const notificationRouter = new Hono();
 
 notificationRouter.get("/get", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
   try {
     const userId = c.get("user").id;
     const notifications = await prisma.notification.findMany({
@@ -61,10 +61,10 @@ notificationRouter.get("/get", isUser, async (c) => {
 });
 
 notificationRouter.put("/read/:id", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
   try {
     const result = idSchema.safeParse(c.req.param("id"));
     if (!result.success) {
@@ -103,10 +103,10 @@ notificationRouter.put("/read/:id", isUser, async (c) => {
 });
 
 notificationRouter.put("/all", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
   try {
     const receiverId = c.get("user").id;
     await prisma.notification.updateMany({
@@ -137,10 +137,10 @@ notificationRouter.put("/all", isUser, async (c) => {
 });
 
 notificationRouter.get("/get/count", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
   try {
     const receiverId = c.get("user").id;
     const count = await prisma.notification.count({

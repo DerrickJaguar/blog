@@ -15,11 +15,17 @@ export function useTrendingTags() {
   useEffect(() => {
     const handleFetchingTrendingTags = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setTagsLoading(false);
+          return;
+        }
+        
         const res = await axios.get<trendingTagsAxios>(
           `${BACKEND_URL}/api/v1/blog/tags/trend`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -27,7 +33,6 @@ export function useTrendingTags() {
         setTrendingTags(tags);
       } catch (e) {
         console.error("Error:", e instanceof Error ? e.message : e);
-        alert("Error encountered while fetching trending tags");
       } finally {
         setTagsLoading(false);
       }
@@ -53,16 +58,21 @@ export function useNewUsers() {
   useEffect(() => {
     const handleFetchingNewUsers = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setUsersLoading(false);
+          return;
+        }
+        
         const res = await axios.get(`${BACKEND_URL}/api/v1/user/bulk/new`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         console.log(res.data.msg);
         setNewUsers(res.data.users);
       } catch (e) {
         console.error("Error:", e instanceof Error ? e.message : e);
-        alert("Error encountered while fetching trending tags");
       } finally {
         setUsersLoading(false);
       }

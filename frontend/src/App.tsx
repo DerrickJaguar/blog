@@ -35,30 +35,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/blogs"
-            element={
-              <ProtectedRoute>
-                <Blogs />
-              </ProtectedRoute>
-            }
-          ></Route>
-          <Route
-            path="/blogs/:filter"
-            element={
-              <ProtectedRoute>
-                <FilteredBlog />
-              </ProtectedRoute>
-            }
-          ></Route>
-          <Route
-            path="/tags/:filter"
-            element={
-              <ProtectedRoute>
-                <FilteredBlogByTag />
-              </ProtectedRoute>
-            }
-          ></Route>
+          <Route path="/blogs" element={<Blogs />}></Route>
+          <Route path="/blogs/:filter" element={<FilteredBlog />}></Route>
+          <Route path="/tags/:filter" element={<FilteredBlogByTag />}></Route>
           <Route
             path="/profile"
             element={

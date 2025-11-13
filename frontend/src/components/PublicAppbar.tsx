@@ -1,58 +1,17 @@
-import React, { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Avatar } from "./Avatar";
-import { useAvatar } from "../stateManagement/avatar";
-import { useNotificatinCount } from "../hooks/notifications";
-import { CustomAlert } from "./CustomAlert";
+import { useState } from "react";
 
-export function Appbar() {
+export function PublicAppbar() {
   const [active, setActive] = useState(false);
   const [searchType, setSearchType] = useState("Blogs");
-  const avatar = useAvatar((s) => s.avatar);
-  const fetchAvatar = useAvatar((s) => s.fetchAvatar);
   const [filter, setFilter] = useState("");
   const navigate = useNavigate();
-  const [alert, setAlert] = useState<null | {
-    msg: string;
-    type: "success" | "error" | "info" | "warning";
-  }>(null);
-  const handleAlert = useCallback(
-    (alert: {
-      msg: string;
-      type: "success" | "error" | "info" | "warning";
-    }) => {
-      setAlert(alert);
-      setTimeout(() => setAlert(null), 3000);
-    },
-    []
-  );
-  const count = useNotificatinCount(handleAlert);
 
-  useEffect(() => {
-    fetchAvatar();
-  }, [fetchAvatar]);
-  const handleLogOut = () => {
-    handleAlert({ msg: "You have been logged out", type: "info" });
-    setTimeout(() => {
-      localStorage.removeItem("token");
-      navigate("/signin");
-    }, 2000);
-  };
   return (
     <div className="flex items-center px-4 py-2 border-b-2 border-gray-200 bg-white fixed w-screen top-0 z-50 justify-between">
-      {alert && (
-        <CustomAlert
-          msg={alert.msg}
-          type={alert.type}
-          onClose={() => {
-            setAlert(null);
-          }}
-        />
-      )}
       <Link to={"/blogs"}>
-        {" "}
         <div className="font-bold text-3xl ml-4 mr-10 cursor-pointer">
-          AfricaDailyTimes
+          Africa Daily Times
         </div>
       </Link>
       <div className="flex justify-between w-full">
@@ -183,87 +142,19 @@ export function Appbar() {
             </div>
           </div>
         </form>
-        <div className="mr-4 gap-6 flex items-center">
-          <Link to={"/blogs/create"}>
-            <button className="text-gray-500 hover:text-black flex items-center gap-2 text-lg cursor-pointer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-7"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                />
-              </svg>
-              write
+        <div className="mr-4 gap-4 flex items-center">
+          <Link to={"/signin"}>
+            <button className="text-gray-700 hover:text-black font-medium text-base cursor-pointer">
+              Sign in
             </button>
           </Link>
-          <div className="relative">
-            <Link to={"/notifications"}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-7"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                />
-              </svg>
-              {count > 0 && count < 99 && (
-                <span className="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full px-1">
-                  {" "}
-                  {count}
-                </span>
-              )}
-              {count > 99 && (
-                <span className="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full px-1">
-                  {" "}
-                  99+
-                </span>
-              )}
-            </Link>
-          </div>
-          <AppProfile avatar={avatar} />
-          <button
-            className="flex items-center justify-center rounded-full px-2 py-2 bg-gray-200 text-gray-500 cursor-pointer"
-            onClick={handleLogOut}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="size-7"
-            >
-              <path
-                fillRule="evenodd"
-                d="M16.5 3.75a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 1-1.5-1.5V15a.75.75 0 0 0-1.5 0v3.75a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V5.25a3 3 0 0 0-3-3h-6a3 3 0 0 0-3 3V9A.75.75 0 1 0 9 9V5.25a1.5 1.5 0 0 1 1.5-1.5h6ZM5.78 8.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 0 0 1.06-1.06l-1.72-1.72H15a.75.75 0 0 0 0-1.5H4.06l1.72-1.72a.75.75 0 0 0 0-1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+          <Link to={"/signup"}>
+            <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 font-medium text-base">
+              Get started
+            </button>
+          </Link>
         </div>
       </div>
     </div>
   );
 }
-
-interface AppProfileProps {
-  avatar: string;
-}
-export const AppProfile = React.memo(({ avatar }: AppProfileProps) => {
-  return (
-    <Link to={"/profile"}>
-      <Avatar avatar={avatar} size={"md"}></Avatar>
-    </Link>
-  );
-});

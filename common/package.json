@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "dist/zod.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,5 +12,8 @@
   "description": "",
   "dependencies": {
     "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

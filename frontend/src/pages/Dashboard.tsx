@@ -6,7 +6,11 @@ export function Dashboard() {
   return (
     <div className="h-screen w-screen bg-indigo-50">
       <div className="fixed top-0 left-0 right-0 border-b-2 border-gray-800 h-15 flex justify-between px-5 bg-indigo-50 z-20">
-        <div className="font-bold text-5xl ml-20">CLOSER</div>
+        <Link to={"/blogs"}>
+          <div className="font-bold text-5xl ml-20 hover:opacity-80 cursor-pointer">
+            AfricaDailyTimes
+          </div>
+        </Link>
         <div className="flex gap-7 items-center">
           <Link to={"/signin"}>
             <div className="text-lg font-semibold hover:underline cursor-pointer ">
@@ -30,9 +34,14 @@ export function Dashboard() {
             <div className="text-3xl mt-5">
               This is a place for you to share your story.
             </div>
-            <Link to={"/blogs"}>
+            <Link to={"/signup"}>
               <div className="text-xl rounded-full bg-black text-white px-5 py-2 cursor-pointer hover:opacity-90 inline-block">
                 Start Sharing
+              </div>
+            </Link>
+            <Link to={"/blogs"}>
+              <div className="text-xl mt-4 text-gray-700 hover:text-black cursor-pointer underline">
+                or browse blogs →
               </div>
             </Link>
           </div>

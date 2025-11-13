@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client/edge";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "@prisma/client";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 import { env } from "hono/adapter";
 import bcrypt from "bcryptjs";
 import { idSchema, userSchema } from "pbdev-medium-common";
@@ -9,21 +9,21 @@ import isUser from "../middlewares/isUser";
 export const userRouter = new Hono();
 
 userRouter.post("/signup", async (c) => {
-  const { DATABASE_URL, JWT_SECRET } = env<{
-    JWT_SECRET: string;
-    DATABASE_URL: string;
-  }>(c);
+  const e = env<{ JWT_SECRET: string; DATABASE_URL: string }>(c) as any;
+  const DATABASE_URL: string = e?.DATABASE_URL || process.env.DATABASE_URL!;
+  const JWT_SECRET: string = e?.JWT_SECRET || process.env.JWT_SECRET!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const body = await c.req.json();
     const response = userSchema.safeParse(body);
     if (!response.success) {
-      console.error("Input validation failed");
+      console.error("Input validation failed", response.error.format());
       return c.json(
         {
           msg: "Input validation failed",
+          errors: response.error.format(),
         },
         400
       );
@@ -69,13 +69,12 @@ userRouter.post("/signup", async (c) => {
 });
 
 userRouter.post("/signin", async (c) => {
-  const { DATABASE_URL, JWT_SECRET } = env<{
-    JWT_SECRET: string;
-    DATABASE_URL: string;
-  }>(c);
+  const e = env<{ JWT_SECRET: string; DATABASE_URL: string }>(c) as any;
+  const DATABASE_URL: string = e?.DATABASE_URL || process.env.DATABASE_URL!;
+  const JWT_SECRET: string = e?.JWT_SECRET || process.env.JWT_SECRET!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const { email, password } = await c.req.json();
     const response = userSchema.safeParse({ email, password });
@@ -102,13 +101,11 @@ userRouter.post("/signin", async (c) => {
 });
 
 userRouter.get("/avatar", isUser, async (c) => {
-  const { DATABASE_URL } = env<{
-    JWT_SECRET: string;
-    DATABASE_URL: string;
-  }>(c);
+  const e = env<{ DATABASE_URL: string }>(c) as any;
+  const DATABASE_URL: string = e?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   const user = c.get("user");
   try {
     const userAvatar = await prisma.user.findUnique({
@@ -159,10 +156,10 @@ type UserWithProfile = {
 };
 
 userRouter.get("/bulk/filter", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   const filter = c.req.query("filter");
   if (!filter || typeof filter !== "string") {
     return c.json({ msg: "Missing or invalid filter query" }, 400);
@@ -245,10 +242,10 @@ userRouter.get("/bulk/filter", isUser, async (c) => {
 });
 
 userRouter.post("/follow/:followingId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const result = idSchema.safeParse(c.req.param("followingId"));
     if (!result.success) {
@@ -314,10 +311,10 @@ userRouter.post("/follow/:followingId", isUser, async (c) => {
 });
 
 userRouter.get("/follower/get/:userId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const currentUserId = c.get("user").id;
     const result = idSchema.safeParse(c.req.param("userId"));
@@ -389,10 +386,10 @@ userRouter.get("/follower/get/:userId", isUser, async (c) => {
 });
 
 userRouter.get("following/get/:userId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const currentUserId = c.get("user").id;
     const result = idSchema.safeParse(c.req.param("userId"));
@@ -463,18 +460,32 @@ userRouter.get("following/get/:userId", isUser, async (c) => {
   }
 });
 
-userRouter.get("/bulk/new", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+userRouter.get("/bulk/new", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
-  const user = c.get("user").id;
+  });
+  
+  // Try to get user from context, but it may not exist without isUser middleware
+  let user = "";
   try {
+    const contextUser = c.get("user" as any);
+    if (contextUser && contextUser.id) {
+      user = contextUser.id;
+    }
+  } catch (e) {
+    // User not authenticated, continue as guest
+  }
+  
+  try {
+    const whereClause: any = {};
+    if (user) {
+      whereClause.id = { not: user };
+    }
+    
     const users = (await prisma.user.findMany({
       take: 5,
-      where: {
-        id: { not: user },
-      },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -494,7 +505,7 @@ userRouter.get("/bulk/new", isUser, async (c) => {
 
     const followerIds = users.map((u) => u.id);
 
-    const followsBack = await prisma.follow.findMany({
+    const followsBack = user ? await prisma.follow.findMany({
       where: {
         followerId: user,
         followingId: { in: followerIds },
@@ -502,16 +513,16 @@ userRouter.get("/bulk/new", isUser, async (c) => {
       select: {
         followingId: true,
       },
-    });
-    const newUsersFollowers = (await prisma.follow.groupBy({
+    }) : [];
+    const newUsersFollowers = await prisma.follow.groupBy({
       by: ["followingId"],
       where: {
         followingId: { in: followerIds },
       },
       _count: true,
-    })) as { followingId: string; _count: number }[];
+    });
     const followersCountMap = new Map(
-      newUsersFollowers.map((f) => [f.followingId, f._count])
+      newUsersFollowers.map((f) => [f.followingId, f._count as number])
     );
     const followedSet = new Set(followsBack.map((f) => f.followingId));
     const completeUsers = users.map((u) => ({

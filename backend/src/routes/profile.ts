@@ -1,16 +1,16 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client/edge";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { PrismaClient } from "@prisma/client";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 import { env } from "hono/adapter";
 import isUser from "../middlewares/isUser";
 
 export const profileRouter = new Hono();
 
 profileRouter.get("/get", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
 
   try {
     const userId = c.get("user").id;
@@ -146,11 +146,11 @@ profileRouter.get("/get", isUser, async (c) => {
   }
 });
 
-profileRouter.get("/get/details", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+profileRouter.post("/update", isUser, async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
 
   try {
     const userId = c.get("user").id;
@@ -189,10 +189,10 @@ profileRouter.get("/get/details", isUser, async (c) => {
 });
 
 profileRouter.get("/specific/:userId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
 
   try {
     const CurrentUserId = c.get("user").id;
@@ -324,15 +324,15 @@ profileRouter.get("/specific/:userId", isUser, async (c) => {
     const hasFollowedTheFollowersSet = new Set(
       hasFollowedTheFollowersIds.map((f) => f.followingId)
     );
-    const followersFollowers = (await prisma.follow.groupBy({
+    const followersFollowers = await prisma.follow.groupBy({
       by: ["followingId"],
       where: {
         followingId: { in: followerIds },
       },
       _count: true,
-    })) as { followingId: string; _count: number }[];
+    });
     const followersCountMap = new Map(
-      followersFollowers.map((f) => [f.followingId, f._count])
+      followersFollowers.map((f) => [f.followingId, f._count as number])
     );
     const completeFollowers = followers.map((follower) => ({
       ...follower.follower,
@@ -395,10 +395,10 @@ profileRouter.get("/specific/:userId", isUser, async (c) => {
 });
 
 profileRouter.put("/update", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  }); // .$extends(withAccelerate());
   try {
     const userId = c.get("user").id;
     const { bio, longBio, imageUrl, name } = await c.req.json();

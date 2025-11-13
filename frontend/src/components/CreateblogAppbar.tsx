@@ -18,7 +18,7 @@ export const CreateblogAppbar: React.FC<prop> = ({ onClick }) => {
     <div className="flex items-center justify-between px-4 py-2 border-b-2 border-gray-200 bg-white fixed w-screen top-0 z-40 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
       <Link to={"/blogs"}>
         {" "}
-        <div className="font-bold text-3xl ml-4 cursor-pointer">CLOSER</div>
+        <div className="font-bold text-3xl ml-4 cursor-pointer">AfricaDailyTimes</div>
       </Link>
 
       <div className="flex items-center">

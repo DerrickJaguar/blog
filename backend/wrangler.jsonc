@@ -3,11 +3,8 @@
   "name": "backend",
   "main": "src/index.ts",
   "compatibility_date": "2025-06-25",
-  "compatibility_flags": ["nodejs_compat"],
-  "vars": {
-    "DATABASE_URL": "db/accelerate/url",
-    "JWT_SECRET": "12345"
-  }
+  "compatibility_flags": ["nodejs_compat"]
+  // Environment variables are now loaded from .dev.vars file
   // "kv_namespaces": [
   //   {
   //     "binding": "MY_KV_NAMESPACE",

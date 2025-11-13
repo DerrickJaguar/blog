@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { Prisma, PrismaClient } from "@prisma/client/edge";
-import { withAccelerate } from "@prisma/extension-accelerate";
+import { Prisma, PrismaClient } from "@prisma/client";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 import { env } from "hono/adapter";
 import isUser from "../middlewares/isUser";
 import { blogSchema, idSchema } from "pbdev-medium-common";
@@ -14,10 +14,10 @@ type Variables = {
 export const blogRouter = new Hono<{ Variables: Variables }>();
 
 blogRouter.post("/create", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
 
   try {
     const user = c.get("user");
@@ -57,10 +57,10 @@ blogRouter.post("/create", isUser, async (c) => {
 });
 
 blogRouter.put("/update", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const { title, content, published, id, tagsNames, imgUrl } =
       await c.req.json();
@@ -107,11 +107,11 @@ blogRouter.put("/update", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/get/:id", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/get/:id", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const response = idSchema.safeParse(c.req.param("id"));
     if (!response.success) {
@@ -119,7 +119,7 @@ blogRouter.get("/get/:id", isUser, async (c) => {
       return c.json({ msg: "Invalid blog Id format" }, 400);
     }
     const postId = response.data;
-    const userId = c.get("user").id;
+    const userId = c.get("user")?.id || "";
     const post = await prisma.post.findUnique({
       where: {
         id: postId,
@@ -239,12 +239,12 @@ blogRouter.get("/get/:id", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/bulk", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/bulk", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
-  const userId = c.get("user").id;
+  });
+  const userId = c.get("user")?.id || "";
   const rawPage = Number(c.req.query("page") || 1);
   const page = !isNaN(rawPage) && rawPage > 0 ? rawPage : 1;
   const take = 10;
@@ -366,12 +366,12 @@ blogRouter.get("/bulk", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/filter", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/filter", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
-  const userId = c.get("user").id;
+  });
+  const userId = c.get("user")?.id || "";
   const filter = c.req.query("filter");
   if (!filter || typeof filter !== "string") {
     return c.json({ msg: "Missing or invalid filter query" }, 400);
@@ -504,11 +504,11 @@ blogRouter.get("/filter", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/tags/trend", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/tags/trend", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const allTags = await prisma.tag.findMany({
       include: {
@@ -538,12 +538,12 @@ blogRouter.get("/tags/trend", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/tags/filter", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/tags/filter", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
-  const userId = c.get("user").id;
+  });
+  const userId = c.get("user")?.id || "";
   const filter = c.req.query("filter");
   if (!filter || typeof filter !== "string") {
     return c.json({ msg: "Missing or invalid filter query" }, 400);
@@ -683,11 +683,11 @@ blogRouter.get("/tags/filter", isUser, async (c) => {
   }
 });
 
-blogRouter.get("/comments", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+blogRouter.get("/comments", /* isUser, */ async (c) => {
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const result = idSchema.safeParse(c.req.query("postId"));
     if (!result.success) {
@@ -748,10 +748,10 @@ blogRouter.get("/comments", isUser, async (c) => {
 });
 
 blogRouter.post("/comment/create/:postId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const { comment } = await c.req.json();
     const result = idSchema.safeParse(c.req.param("postId"));
@@ -806,7 +806,7 @@ blogRouter.post("/comment/create/:postId", isUser, async (c) => {
 //   const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
 //   const prisma = new PrismaClient({
 //     datasourceUrl: DATABASE_URL,
-//   }).$extends(withAccelerate());
+//   });
 //   try {
 //     const userId = c.get("user").id;
 //     const result = idSchema.safeParse(c.req.query("postId"));
@@ -855,7 +855,7 @@ blogRouter.post("/comment/create/:postId", isUser, async (c) => {
 //   const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
 //   const prisma = new PrismaClient({
 //     datasourceUrl: DATABASE_URL,
-//   }).$extends(withAccelerate());
+//   });
 //   try {
 //     const userId = c.get("user").id;
 //     const result = idSchema.safeParse(c.req.query("postId"));
@@ -884,10 +884,10 @@ blogRouter.post("/comment/create/:postId", isUser, async (c) => {
 // });
 
 blogRouter.post("/saved/toggle/:postId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const userId = c.get("user").id;
     const result = idSchema.safeParse(c.req.param("postId"));
@@ -938,10 +938,10 @@ blogRouter.post("/saved/toggle/:postId", isUser, async (c) => {
 });
 
 blogRouter.get("/saved/get", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   const userId = c.get("user").id;
   try {
     const savedPosts = await prisma.savedPost.findMany({
@@ -1053,7 +1053,7 @@ blogRouter.get("/saved/get", isUser, async (c) => {
 //   const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
 //   const prisma = new PrismaClient({
 //     datasourceUrl: DATABASE_URL,
-//   }).$extends(withAccelerate());
+//   });
 //   try {
 //     const userId = c.get("user").id;
 //     const result = idSchema.safeParse(c.req.query("postId"));
@@ -1095,7 +1095,7 @@ blogRouter.get("/saved/get", isUser, async (c) => {
 //   const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
 //   const prisma = new PrismaClient({
 //     datasourceUrl: DATABASE_URL,
-//   }).$extends(withAccelerate());
+//   });
 //   try {
 //     const userId = c.get("user").id;
 //     const result = idSchema.safeParse(c.req.query("postId"));
@@ -1135,10 +1135,10 @@ blogRouter.get("/saved/get", isUser, async (c) => {
 // });
 
 blogRouter.post("/like/toggle/:postId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
 
   try {
     const userId = c.get("user").id;
@@ -1218,10 +1218,10 @@ blogRouter.post("/like/toggle/:postId", isUser, async (c) => {
 });
 
 blogRouter.delete("/delete/:postId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const postId = c.req.param("postId");
     const userId = c.get("user").id;
@@ -1241,10 +1241,10 @@ blogRouter.delete("/delete/:postId", isUser, async (c) => {
 });
 
 blogRouter.get("/draft", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const userId = c.get("user").id;
     const res = await prisma.post.findMany({
@@ -1283,10 +1283,10 @@ blogRouter.get("/draft", isUser, async (c) => {
 });
 
 blogRouter.get("/draft/get/:postId", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   try {
     const postId = c.req.param("postId");
     const userId = c.get("user").id;
@@ -1323,10 +1323,10 @@ blogRouter.get("/draft/get/:postId", isUser, async (c) => {
 });
 
 blogRouter.get("/followers/blogs", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   const userId = c.get("user").id;
   const rawPage = Number(c.req.query("page") || 1);
   const page = !isNaN(rawPage) && rawPage > 0 ? rawPage : 1;
@@ -1468,10 +1468,10 @@ blogRouter.get("/followers/blogs", isUser, async (c) => {
 });
 
 blogRouter.get("/followings/blogs", isUser, async (c) => {
-  const { DATABASE_URL } = env<{ DATABASE_URL: string }>(c);
+  const DATABASE_URL = (env<{ DATABASE_URL: string }>(c) as any)?.DATABASE_URL || process.env.DATABASE_URL!;
   const prisma = new PrismaClient({
     datasourceUrl: DATABASE_URL,
-  }).$extends(withAccelerate());
+  });
   const userId = c.get("user").id;
   const rawPage = Number(c.req.query("page") || 1);
   const page = !isNaN(rawPage) && rawPage > 0 ? rawPage : 1;

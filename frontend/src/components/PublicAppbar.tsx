@@ -1,5 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import headerImg from "../assets/header.png";
+import duukazLogo from "../assets/duukaz-logo.png";
+import medicLogo from "../assets/medic-logo.png";
 
 export function PublicAppbar() {
   const [active, setActive] = useState(false);
@@ -12,18 +15,18 @@ export function PublicAppbar() {
       <Link to={"/blogs"} className="flex-shrink-0">
         <div className="flex items-center gap-2 cursor-pointer">
           <img 
-            src="/src/assets/header.jpg" 
+            src={headerImg} 
             alt="Africa Daily Times Logo" 
-            className="h-10 w-10 object-cover rounded"
+            className="h-12 object-cover rounded"
           />
-          <div className="font-bold text-2xl whitespace-nowrap">
-            AfricaDailyTimes
-          </div>
+          {/* <div className="font-bold text-2xl whitespace-nowrap">
+            AfricaDailyTimessss
+          </div> */}
         </div>
       </Link>
       <div className="flex justify-between w-full gap-4">
         <form
-          className="flex-1 max-w-md"
+          className="flex-1 max-w-md mx-auto"
           onSubmit={(e) => e.preventDefault()}
         >
           <div className="flex">
@@ -160,7 +163,7 @@ export function PublicAppbar() {
               title="Duukaz"
             >
               <img 
-                src="/src/assets/duukaz-logo.png" 
+                src={duukazLogo} 
                 alt="Duukaz" 
                 className="h-8 w-auto object-contain"
               />
@@ -173,7 +176,7 @@ export function PublicAppbar() {
               title="Medic ERP"
             >
               <img 
-                src="/src/assets/medic-logo.png" 
+                src={medicLogo}
                 alt="Medic ERP" 
                 className="h-8 w-auto object-contain"
               />
